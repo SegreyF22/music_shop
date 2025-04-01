@@ -40,7 +40,7 @@ class ImageUploadHelper:
     def path(self):
         field_to_combine = getattr(self.instance, self.field_name_to_combine)
         filename = '.'.join([field_to_combine, self.extension])
-        return f'images/{self.instance.__class__.__name__lower()}{self.upload_postfix}/{field_to_combine}/{filename}'
+        return f'images/{self.instance.__class__.__name__.lower()}{self.upload_postfix}/{field_to_combine}/{filename}'
 
 def upload_function(instance, filename):
     if hasattr(instance, 'content_type'):
