@@ -49,7 +49,7 @@ class RegistrationForm(forms.ModelForm):
     # Валидация по полю email
     def clean_email(self):
         email = self.cleaned_data['email']
-        domain = email.split()[-1]
+        domain = email.split('.')[-1]
         if domain in ['net', 'xyu']:
             raise forms.ValidationError(f'Регистрация для домена {domain} невозможна')
         if User.objects.filter(email=email).exists():  # если существует
@@ -58,7 +58,7 @@ class RegistrationForm(forms.ModelForm):
 
     def clean_username(self):
         username = self.cleaned_data['username']
-        if User.objects.filter(username=username).existx():
+        if User.objects.filter(username=username).exists():
             raise forms.ValidationError(f'Имя {username}занято. Попробуйте другое.')
         return username
 

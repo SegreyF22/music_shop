@@ -47,7 +47,7 @@ class LoginView(views.View):
         context = {
             'form': form
         }
-        return render(request, 'registration.html', context)
+        return render(request, 'login.html', context)
 
 
 class RegistrationView(views.View):
@@ -77,7 +77,7 @@ class RegistrationView(views.View):
             )
             user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
             login(request, user)
-            return HttpResponseRedirect
+            return HttpResponseRedirect('/')
         context = {
             'form': form
         }
