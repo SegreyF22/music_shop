@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <h4 class="text_center">Личный кабинет</h4>
+    <hr>
+    <div class="row">
+      <div class="col-4">
+        <div class="list-group" id="list-tab" role="tablist">
+          <a class="list-group-item list-group-item-action active" id="list-orders-list" data-bs-toggle="list" href="#list-orders" role="tab" aria-controls="list-home">Заказы</a>
+          <a class="list-group-item list-group-item-action" id="list-wishlist-list" data-bs-toggle="list" href="#list-wishlist" role="tab" aria-controls="list-profile">Лист ожидания</a>
+        </div>
+      </div>
+      <div class="col-8">
+        <div class="tab-content" id="nav-tabContent">
+          <div class="tab-pane fade show active" id="list-orders" role="tabpanel" aria-labelledby="list-orders-list">Заказы</div>
+          <div class="tab-pane fade" id="list-wishlist" role="tabpanel" aria-labelledby="list-wishlist-list">Лист ожидания</div>
+        </div>
+      </div>
+    </div>
+{% endblock content %}

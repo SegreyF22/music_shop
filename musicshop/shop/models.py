@@ -136,7 +136,7 @@ class Cart(models.Model):
     products = models.ManyToManyField(
         CartProduct, blank=True, related_name='related_cart', verbose_name='Продукта для корзины')
     total_products = models.IntegerField(default=0, verbose_name='Общее кол-во товара')
-    final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена')
+    final_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Общая цена', blank=True,null=True)
     in_order = models.BooleanField(default=False)
     for_anonymous_user = models.BooleanField(default=False)
 
