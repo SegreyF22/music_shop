@@ -28,7 +28,7 @@ class LoginForm(forms.ModelForm):
         return self.cleaned_data
 
 
-class RegistrationsForm(forms.ModelForm):
+class RegistrationForm(forms.ModelForm):
     confirm_password = forms.CharField(widget=forms.PasswordInput)
     password = forms.CharField(widget=forms.PasswordInput)
     phone = forms.CharField(required=False)  # не обязательное поле
