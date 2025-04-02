@@ -3,10 +3,12 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-from utils import upload_function
+
+# from utils import upload_function
 
 
 class MediaType(models.Model):
@@ -27,7 +29,8 @@ class Member(models.Model):
 
     name = models.CharField(max_length=255, verbose_name='Имя музыканта')
     slug = models.SlugField()
-    image = models.ImageField(upload_to=upload_function, blank=True, null=True)
+    # image = models.ImageField(upload_to=upload_function, blank=True, null=True)
+    image = models.ImageField(upload_to='media', blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -58,10 +61,14 @@ class Artist(models.Model):
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
     members = models.ManyToManyField(Member, verbose_name='Участник', related_name='artist')
     slug = models.SlugField()
-    image = models.ImageField(upload_to=upload_function, null=True, blank=True)
+    # image = models.ImageField(upload_to=upload_function, null=True, blank=True)
+    image = models.ImageField(upload_to='media', null=True, blank=True)
 
     def __str__(self):
         return f'{self.name} | {self.genre.name}'
+
+    def get_absolute_url(self):
+        return reverse('artist_detail', kwargs={'artist_slug': self.slug})
 
     class Meta:
         verbose_name = 'Исполнитель'
@@ -81,10 +88,14 @@ class Album(models.Model):
     stock = models.IntegerField(default=1, verbose_name='Наличие на складе')
     price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Цена')
     offer_of_the_week = models.BooleanField(default=False, verbose_name='Предложение недели')
-    image = models.ImageField(upload_to=upload_function)
+    # image = models.ImageField(upload_to=upload_function)
+    image = models.ImageField(upload_to='media')
 
     def __str__(self):
         return f'{self.id} | {self.artist.name} | {self.name}'
+
+    def get_absolute_url(self):
+        return reverse('album_detail', kwargs={'artist_slug': self.artist.slug, 'album_slug': self.slug})
 
     @property
     def ct_model(self):
@@ -179,6 +190,7 @@ class Order(models.Model):
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
 
+
 class Customer(models.Model):
     """Покупатель"""
 
@@ -197,6 +209,7 @@ class Customer(models.Model):
         verbose_name = 'Покупатель'
         verbose_name_plural = 'Покупатели'
 
+
 class Notification(models.Model):
     """Уведомления"""
 
@@ -211,13 +224,15 @@ class Notification(models.Model):
         verbose_name = 'Уведомление'
         verbose_name_plural = 'Уведомления'
 
+
 class ImageGallery(models.Model):
     """Галерея изображений"""
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type','object_id')
-    image = models.ImageField(upload_to=upload_function)
+    content_object = GenericForeignKey('content_type', 'object_id')
+    # image = models.ImageField(upload_to=upload_function)
+    image = models.ImageField(upload_to='media')
     use_in_slider = models.BooleanField(default=False)
 
     def __str__(self):
