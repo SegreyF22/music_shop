@@ -1,10 +1,14 @@
+from itertools import dropwhile
+
 from django.shortcuts import render
 from django import views
 from django.http import HttpResponseRedirect
+from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import authenticate, login
-
+from utils import recalc_cart
 from .mixins import CartMixin
-from .models import Artist, Album, Customer
+from .models import Artist, Album, Customer, CartProduct
 from .forms import LoginForm, RegistrationForm
 
 
@@ -94,3 +98,49 @@ class AccountView(CartMixin, views.View):
             'cart': self.cart
         }
         return render(request, 'account.html', context)
+
+class AddToCartView(CartMixin, views.View):
+
+    def get(self, request, *args, **kwargs):
+        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        content_type = ContentType.objects.get(model=ct_model)
+        product = content_type.model_class().objects.get(slug=product_slug)
+        cart_product, created = CartProduct.objects.get_or_create(
+            user=self.cart.owner, cart=self.cart, content_type=content_type, objects_id=product.id
+        )
+        if created:
+            self.cart.products.add(cart_product)
+        recalc_cart(self.cart)
+        messages.add_message(request, messages.INFO, 'Товар добавлен в корзину')
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+class DeleteFromCartView(CartMixin, views.View):
+
+    def get(self, request, *args, **kwargs):
+        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        content_type = ContentType.objects.get(model=ct_model)
+        product = content_type.model_class().objects.get(slug=product_slug)
+        cart_product, created = CartProduct.objects.get(
+            user=self.cart.owner, cart=self.cart, content_type=content_type, objects_id=product.id
+        )
+        self.cart.products.remove(cart_product)
+        cart_product.delete()
+        recalc_cart(self.cart)
+        messages.add_message(request, messages.INFO, 'Товар удален из корзины')
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+class ChangeQTYView(CartMixin, views.View):
+
+    def post(self, request, *args, **kwargs):
+        ct_model, product_slug = kwargs.get('ct_model'), kwargs.get('slug')
+        content_type = ContentType.objects.get(model=ct_model)
+        product = content_type.model_class().objects.get(slug=product_slug)
+        cart_product, created = CartProduct.objects.get(
+            user=self.cart.owner, cart=self.cart, content_type=content_type, objects_id=product.id
+        )
+        qty = int(request.POST.get('gty'))
+        cart_product.qty = qty
+        cart_product.save()
+        recalc_cart(self.cart)
+        messages.add_message(request, messages.INFO, 'Количество товара изменено')
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
