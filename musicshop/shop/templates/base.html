@@ -35,10 +35,15 @@
           </li>
           {% endif %}
       </ul>
-      <form class="d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-      </form>
+      {% if request.user.is_authenticated %}
+        <ul class="navbar-nav">
+            <li class="nav-item"><a href="{% url 'cart' %}" class="nav-link"><i class="fas fa-shopping-cart"></i> <span class="badge bg-danger">{{ cart.products.count }}</span></a></li>
+        </ul>
+      {% endif %}
+<!--      <form class="d-flex" role="search">-->
+<!--        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">-->
+<!--        <button class="btn btn-outline-success" type="submit">Search</button>-->
+<!--      </form>-->
     </div>
   </div>
 </nav>
