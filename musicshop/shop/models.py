@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-
+import operator
 # from utils import upload_function
 
 
@@ -109,6 +109,10 @@ class Album(models.Model):
 class CartProduct(models.Model):
     """Продукт корзины"""
 
+    MODEL_CARTPRODUCT_DISPLAY_NAME_MAP = {
+        'Album': {'is_constructable': True,'fields':['name','artist.name'],'separator':' - '}
+    }
+
     user = models.ForeignKey('Customer', verbose_name='Покупатель', on_delete=models.CASCADE)
     cart = models.ForeignKey('Cart', verbose_name='Корзина', on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -119,6 +123,20 @@ class CartProduct(models.Model):
 
     def __str__(self):
         return f'Продукт: {self.content_object.name} (для корзины)'
+
+    @property
+    def display_name(self):
+        model_fields = self.MODEL_CARTPRODUCT_DISPLAY_NAME_MAP.get(self.content_object.__class__._meta.model_name.capitalizer())
+        if model_fields and model_fields['is_constructable']:
+            display_name = model_fields['separator'].join(
+                [operator.attrgetter(field)(self.content_object) for field in model_fields['fields']]
+            )
+            return display_name
+        if model_fields and not model_fields['is_constructable']:
+            display_name = operator.attrgetter(model_fields['field'])(self.content_object)
+            return display_name
+        return self.content_object
+
 
     def save(self, *args, **kwargs):
         self.final_price = self.qty * self.content_object.price
