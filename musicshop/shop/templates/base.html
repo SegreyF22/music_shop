@@ -50,7 +50,40 @@
 
 <div class="container">
   {% block content %}
+    <div class="col-md-12">
+      <div class="row">
+        {% for album in albums %}
+          <div class="card col-md-3 p-0 mb-3 mt-3">
 
+            <img src="{{ album.image.url }}" class="card-img-top">
+            <div class="card-body text-center">
+            <h5 class="card-title"><a href="{{ album.artist.get_absolute_url }}" class="text-decoration-none">
+              {{ album.artist.name }}
+            </a></h5>
+            <h5 class="card-title"><a href="{{ album.get_absolute_url }}" class="text-decoration-none">
+              {{ album.name }}
+            </a></h5>
+            </div>
+
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">Носитель: <strong>{{ album.media_type.name }}</strong></li>
+              <li class="list-group-item">Дата релиза: <strong>{{ album.release_date|date:"d-m-Y" }}</strong></li>
+              <li class="list-group-item">Жанр: <strong>{{ album.artist.genre.name }}</strong></li>
+              <li class="list-group-item">
+
+                Наличие: {% if album.stock %}<strong class="badge bg-success">
+                Есть в наличие - {{ album.stock }} шт.
+              </strong>{% else %}
+                <strong class="badge bg-danger">Нет в наличие</strong>
+                {% endif %}
+
+              </li>
+            </ul>
+
+          </div>
+        {% endfor %}
+      </div>
+    </div>
   {% endblock content %}
 
 </div>
