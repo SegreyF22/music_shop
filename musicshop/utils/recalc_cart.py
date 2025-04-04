@@ -6,6 +6,6 @@ def recalc_cart(cart):
     if cart_data.get('final_price__sum'):
         cart.final_price = cart_data['final_price__sum']
     else:
-        cart_data.final_price = 0
+        cart.final_price = 0
     cart.total_products = cart_data['id__count']
     cart.save()

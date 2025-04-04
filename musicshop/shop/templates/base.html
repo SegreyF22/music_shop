@@ -72,13 +72,40 @@
               <li class="list-group-item">
 
                 Наличие: {% if album.stock %}<strong class="badge bg-success">
-                Есть в наличие - {{ album.stock }} шт.
+                Есть в наличие - {{album.stock}} шт.
               </strong>{% else %}
                 <strong class="badge bg-danger">Нет в наличие</strong>
                 {% endif %}
 
               </li>
             </ul>
+            <div class="card-body text-center">
+
+              {% if request.user.is_authenticated %}
+                {% if album.stock %}
+                    {% if album in cart.products_in_cart %}
+                        <a href="#" class="btn btn-default" disabled="">Добавлен в корзину</a>
+                    {% else %}
+                        <a href="{% url 'add_to_cart' ct_model=album.ct_model slug=album.slug %}" class="btn btn-primary">
+                          Добавить в корзину
+                        </a>
+                    {%  endif %}
+                {% else %}
+                  {% if album not in request.user.customer.wishlist.all %}
+                            <a href="{% url 'add_to_wishlist' album_id=album.id %}" class="btn btn-warning">
+                              Добавить в ожидаемое
+                            </a>
+                  {% else %}
+                      <a href="#" class="btn btn-default" disabled="">Добавлен в ожидаемое </a>
+                  {% endif %}
+                {% endif %}
+              {% else %}
+                <a href="#" class="btn btn-default" disabled="">
+                  Авторизуйтесь или зарегистрируйтесь, только авторизованные пользователи могут осуществлять заказы
+                </a>
+              {% endif %}
+
+            </div>
 
           </div>
         {% endfor %}

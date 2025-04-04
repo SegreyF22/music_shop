@@ -129,7 +129,7 @@ class CartProduct(models.Model):
     @property
     def display_name(self):
         model_fields = self.MODEL_CARTPRODUCT_DISPLAY_NAME_MAP.get(
-            self.content_object.__class__._meta.model_name.capitalizer())
+            self.content_object.__class__._meta.model_name.capitalize())
         if model_fields and model_fields['is_constructable']:
             display_name = model_fields['separator'].join(
                 [operator.attrgetter(field)(self.content_object) for field in model_fields['fields']]
