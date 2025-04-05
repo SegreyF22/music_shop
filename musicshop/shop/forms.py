@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from models import Order
+from .models import Order
 
 
 User = get_user_model()  # берет именно ту модель user, которую мы прописали в настройках(AUTH_USER_MODEL)

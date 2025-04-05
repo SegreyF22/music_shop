@@ -8,6 +8,7 @@ from utils import recalc_cart
 from .mixins import CartMixin, NotificationsMixin
 from .models import Artist, Album, Customer, CartProduct, Notification
 from .forms import LoginForm, RegistrationForm, OrderForm
+from django.db import transaction
 
 
 class BaseView(CartMixin, NotificationsMixin, views.View):
@@ -199,3 +200,73 @@ class CheckoutView(CartMixin, NotificationsMixin, views.View):
             'notifications': self.notifications(request.user)
         }
         return render(request, 'checkout.html', context)
+
+
+class MakeOrderView(CartMixin, views.View):
+
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        form = OrderForm(request.POST or None)
+        customer = Customer.objects.get(user=request.user)
+        if form.is_valid():
+            out_of_stock = []
+            more_than_on_stock = []
+            out_of_stock_message = ''
+            more_than_on_stock_message = ''
+            for item in self.cart.products.all():
+                if not item.content_object.stock:
+                    out_of_stock.append(' - '.join([item.content_object.artist.name, item.content_object.name]))
+                if item.content_object.stock and item.content_object.stock < item.qty:
+                    more_than_on_stock.append(
+                        {'product': ' - '.join([item.content_object.artist.name, item.content_object.name]),
+                         'stock':item.content_object.stock, 'qty': item.qty})
+            if out_of_stock:
+                out_of_stock_products = ', '.join(out_of_stock)
+                out_of_stock_message = f'Товара уже нет в наличии: {out_of_stock_products}.\n'
+            if more_than_on_stock_message:
+                for item in more_than_on_stock:
+                    more_than_on_stock_message += (f'Товар: {item["products"]},'
+                                                   f'В наличии: {item["stock"]}'
+                                                   f'Заказано: {item["qty"]}\n')
+            error_message_for_customer = ''
+            if out_of_stock:
+                error_message_for_customer = out_of_stock_message + '\n'
+            if more_than_on_stock:
+                error_message_for_customer += more_than_on_stock_message + '\n'
+            if error_message_for_customer:
+                messages.add_message(request, messages.INFO, error_message_for_customer)
+                return HttpResponseRedirect('/checkout/')
+            # если все ок и надо сохранить инфу о новом заказе
+            new_order = form.save(commit=False)
+            new_order.customer = customer
+            new_order.first_name = form.cleaned_data['first_name']
+            new_order.last_name = form.cleaned_data['last_name']
+            new_order.phone = form.cleaned_data['phone']
+            new_order.address = form.cleaned_data['address']
+            new_order.buying_type = form.cleaned_data['buying_type']
+            new_order.order_data = form.cleaned_data['order_data']
+            # new_order.comment = form.cleaned_data['comment']
+            new_order.save()
+            # сохраняем корзину
+            self.cart.in_order = True
+            self.cart.save()
+            new_order.cart = self.cart
+            new_order.save()
+            customer.orders.add(new_order)
+            # уменьшение кол-ва товара на кол-во заказанного товара
+            for item in self.cart.products.all():
+                item.content_object.stock -= item.stock
+                item.content_object.save()
+
+            messages.add_message(request, messages.INFO, 'Спасибо за заказ! Менеджер с Вами свяжется')
+            return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/')
+
+
+
+
+
+
+
+
+
