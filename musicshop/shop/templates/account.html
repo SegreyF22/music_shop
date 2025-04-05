@@ -13,7 +13,95 @@
       </div>
       <div class="col-8">
         <div class="tab-content" id="nav-tabContent">
-          <div class="tab-pane fade show active" id="list-orders" role="tabpanel" aria-labelledby="list-orders-list">Заказы</div>
+          <div class="tab-pane fade show active" id="list-orders" role="tabpanel" aria-labelledby="list-orders-list">
+
+              <table class="table">
+                  <thead>
+
+                    <tr>
+                        <th scope="col">Номер заказа</th>
+                        <th scope="col">Статус</th>
+                        <th scope="col">Сумма</th>
+                        <th scope="col">Детали</th>
+                    </tr>
+
+                  </thead>
+                  <tbody>
+                  {% for order in customer.orders.all %}
+                    <tr>
+                        <th scope="row">{{ order.id }}</th>
+                        <th scope="row">{{ order.get_status_display }}</th>
+                        <th scope="row">{{ order.final_price }}</th>
+                        <td><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderDetails-{{ order.id }}">Детали заказа</button> </td>
+
+                        <div class="modal fade" id="orderDetails-{{ order.id }}" tabindex="-1"
+                             aria-labelledby="orderDetailsLabel-{{ order.id }}" aria-hidden="true">
+
+                            <div class="modal-dialog modal-xl">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5  class="modal-title text-center" id="orderDetailsLabel-{{ order.id }}">
+                                            Информация о заказе #{{order.id}}
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-3 text-center mb-2">
+                                                <strong>Исполнитель/альбом</strong>
+                                            </div>
+                                            <div class="col-md-3 text-center mb-2">
+                                                <strong>Изображение</strong>
+                                            </div>
+                                            <div class="col-md-3 text-center mb-2">
+                                                <strong>Кол-во</strong>
+                                            </div>
+                                            <div class="col-md-3 text-center mb-2">
+                                                <strong>Общая цена</strong>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        {% for item in order.cart.products.all %}
+                                            <div class="col-md-3 mb-3 text-center">
+                                                <strong>
+                                                    <a href="{{ item.content_object.artist.get_absolute_url }}"
+                                                       class="text-decoration-none">
+                                                        {{ item.content_object.artist.name }}
+                                                    </a> - <a href="{{ item.content_object.get_absolute_url }}"
+                                                              class="text-decoration-none"></a>
+                                                </strong>
+                                            </div>
+                                            <div class="col-md-3 mb-3 text-center">
+                                                <img src="{{ item.content_object.image.url }}" class="img-fluid">
+                                            </div>
+                                            <div class="col-md-3 mb-3 text-center">
+                                                {{ item.qty }} шт.
+                                            </div>
+                                            <div class="col-md-3 mb-3 text-center">
+                                                {{item.final_price}} руб.
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Закрыть
+                                    </button>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </tr>
+                  {% endfor %}
+
+
+                  </tbody>
+
+
+              </table>
+
+          </div>
           <div class="tab-pane fade" id="list-wishlist" role="tabpanel" aria-labelledby="list-wishlist-list">
               <div class="row">
                   {% for album in customer.wishlist.all %}
