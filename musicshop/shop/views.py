@@ -5,19 +5,19 @@ from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import authenticate, login
 from utils import recalc_cart
-from .mixins import CartMixin
-from .models import Artist, Album, Customer, CartProduct
+from .mixins import CartMixin, NotificationsMixin
+from .models import Artist, Album, Customer, CartProduct, Notification
 from .forms import LoginForm, RegistrationForm
 
 
-class BaseView(CartMixin, views.View):
-# class BaseView(views.View):
+class BaseView(CartMixin,NotificationsMixin, views.View):
 
     def get(self, request, *args, **kwargs):
         album = Album.objects.all().order_by('-id')[:5]
         context = {
             'albums': album,
-            # 'cart': self.cart.user,
+            'cart': self.cart,
+            'notifications': self.notifications(request.user)
         }
         return render(request, 'base.html', context)
 
@@ -161,4 +161,11 @@ class AddToWishlist(views.View):
         album = Album.objects.get(id=kwargs['album_id'])
         customer = Customer.objects.get(user=request.user)
         customer.wishlist.add(album)
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+class ClearNotificationsView(views.View):
+
+    @staticmethod
+    def get(request, *args, **kwargs):
+        Notification.objects.make_all_read(request.user.customer)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])

@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.urls import reverse
+from django.db.models.signals import post_save, pre_save
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
@@ -88,6 +89,7 @@ class Album(models.Model):
     slug = models.SlugField()
     description = models.TextField(verbose_name='Описание', default='Описание появится позже')
     stock = models.IntegerField(default=1, verbose_name='Наличие на складе')
+    out_of_stock = models.BooleanField(default=False, verbose_name='Нет в наличии')
     price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Цена')
     offer_of_the_week = models.BooleanField(default=False, verbose_name='Предложение недели')
     # image = models.ImageField(upload_to=upload_function)
@@ -230,12 +232,28 @@ class Customer(models.Model):
         verbose_name_plural = 'Покупатели'
 
 
+class NotificationManager(models.Model):
+
+    def get_queryset(self):
+        return super().get_queryset()
+
+    def all(self, recipient):
+        return self.get_queryset().filter(
+            recipient=recipient, read=False
+        )
+
+    def make_all_read(self, recipient):
+        qs = self.get_queryset().filter(recipient=recipient, read=False)
+        qs.update(read=True)
+
+
 class Notification(models.Model):
     """Уведомления"""
 
     recipient = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name='Получатель')
     text = models.TextField()
     read = models.BooleanField(default=False)
+    objects = NotificationManager()
 
     def __str__(self):
         return f'Уведомление для {self.recipient.user.username} | id={self.id}'
@@ -265,3 +283,27 @@ class ImageGallery(models.Model):
     class Meta:
         verbose_name = 'Галерея изображений'
         verbose_name_plural = verbose_name
+
+
+def check_previous_qty(instance):
+    try:
+        album = Album.objects.get(id=instance.id)
+    except Album.DoesNotExist:
+        return None
+    instance.out_of_stock = True if not album.stock else False
+
+def send_notification(instance, **kwargs):
+    if instance.stock and instance.out_of_stock:
+        customers = Customer.objects.filter(wishlist__in=[instance])
+        if customers.count():
+            for c in customers:
+                Notification.objects.create(
+                    recipient=c,
+                    text=mark_safe(f'Позиция <a href="{instance.get_absolute_url()}">{instance.name}</a>,'
+                                   f'которую Вы ожидаете, есть в наличие.')
+                )
+                c.wishlist.remove(instance)
+
+
+post_save.connect(send_notification, sender=Album)  # sender - объект, внутри которой будет работать сигнал
+pre_save.connect(check_previous_qty, sender=Album)
