@@ -10,7 +10,7 @@ from .models import Artist, Album, Customer, CartProduct, Notification
 from .forms import LoginForm, RegistrationForm
 
 
-class BaseView(CartMixin,NotificationsMixin, views.View):
+class BaseView(CartMixin, NotificationsMixin, views.View):
 
     def get(self, request, *args, **kwargs):
         album = Album.objects.all().order_by('-id')[:5]
@@ -29,7 +29,7 @@ class ArtistDetailView(views.generic.DetailView):
     context_object_name = 'artist'
 
 
-class AlbumDetailView(views.generic.DetailView):
+class AlbumDetailView(CartMixin, views.generic.DetailView):
     model = Album
     template_name = 'album/album_detail.html'
     slug_url_kwarg = 'album_slug'
@@ -91,7 +91,8 @@ class RegistrationView(views.View):
         context = {
             'form': form
         }
-        return render(request,'registration.html', context)
+        return render(request, 'registration.html', context)
+
 
 class AccountView(CartMixin, views.View):
 
@@ -103,10 +104,12 @@ class AccountView(CartMixin, views.View):
         }
         return render(request, 'account.html', context)
 
+
 class CartView(CartMixin, views.View):
 
     def get(self, request, *args, **kwargs):
         return render(request, 'cart.html', {'cart': self.cart})
+
 
 class AddToCartView(CartMixin, views.View):
 
@@ -123,6 +126,7 @@ class AddToCartView(CartMixin, views.View):
         messages.add_message(request, messages.INFO, 'Товар добавлен в корзину')
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
+
 class DeleteFromCartView(CartMixin, views.View):
 
     def get(self, request, *args, **kwargs):
@@ -137,6 +141,7 @@ class DeleteFromCartView(CartMixin, views.View):
         recalc_cart(self.cart)
         messages.add_message(request, messages.INFO, 'Товар удален из корзины')
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
 
 class ChangeQTYView(CartMixin, views.View):
 
@@ -154,6 +159,7 @@ class ChangeQTYView(CartMixin, views.View):
         messages.add_message(request, messages.INFO, 'Количество товара изменено')
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
+
 class AddToWishlist(views.View):
 
     @staticmethod
@@ -162,6 +168,7 @@ class AddToWishlist(views.View):
         customer = Customer.objects.get(user=request.user)
         customer.wishlist.add(album)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
 
 class ClearNotificationsView(views.View):
 

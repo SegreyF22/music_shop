@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.db import models
 from django.urls import reverse
 from django.db.models.signals import post_save, pre_save
@@ -66,6 +66,7 @@ class Artist(models.Model):
     slug = models.SlugField()
     # image = models.ImageField(upload_to=upload_function, null=True, blank=True)
     image = models.ImageField(upload_to='media', null=True, blank=True)
+    image_gallery = GenericRelation('imagegallery')
 
     def __str__(self):
         return f'{self.name} | {self.genre.name}'
