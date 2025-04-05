@@ -14,7 +14,47 @@
       <div class="col-8">
         <div class="tab-content" id="nav-tabContent">
           <div class="tab-pane fade show active" id="list-orders" role="tabpanel" aria-labelledby="list-orders-list">Заказы</div>
-          <div class="tab-pane fade" id="list-wishlist" role="tabpanel" aria-labelledby="list-wishlist-list">Лист ожидания</div>
+          <div class="tab-pane fade" id="list-wishlist" role="tabpanel" aria-labelledby="list-wishlist-list">
+              <div class="row">
+                  {% for album in customer.wishlist.all %}
+                    <div class="card col-md-4 p-0 mb-3 mt-3">
+                        <img src="{{ album.image.url }}" class="card-img-top">
+                        <div class="card-body text-center">
+                            <h5 class="card-title"><a href="{{ album.artist.get_absolute_url }}" class="text-decoration-none">
+                                {{ album.artist.name }}
+                            </a> </h5>
+                            <h5 class="card-title"><a href="{{ album.get_absolute_url }}" class="text-decoration-none">
+                                {{ album.name }}
+                            </a> </h5>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                Носитель: <strong>{{ album.media_type.name }}</strong>
+                            </li>
+                            <li class="list-group-item">
+                                Дата релиза: <strong>{{ album.release_date|date:"d-m-Y" }}</strong>
+                            </li>
+                            <li class="list-group-item">
+                                Жанр: <strong class="badge bg-dark">{{ album.artist.genre.name }}</strong>
+                            </li>
+                            <li class="list-group-item">
+                                Наличие: {% if album.stock %}<strong class="badge bg-success">
+                                Есть в наличии</strong>{% else %}
+                                <strong class="badge bg-danger">Нет в наличии</strong>{% endif %}
+                            </li>
+                        </ul>
+                        <div class="card-body text-center">
+                            <a href="{% url 'remove_from_wishlist' album_id=album.id %}"
+                               class="btn-btn-danger">Удалить из ожидаемого<i class="fas fa-star"></i></a>
+                        </div>
+                    </div>
+                  {% endfor %}
+
+
+              </div>
+
+
+          </div>
         </div>
       </div>
     </div>

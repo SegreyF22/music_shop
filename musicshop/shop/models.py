@@ -306,4 +306,4 @@ def send_notification(instance, **kwargs):
 
 
 post_save.connect(send_notification, sender=Album)  # sender - объект, внутри которой будет работать сигнал
-pre_save.connect(check_previous_qty, sender=Album)
+# pre_save.connect(check_previous_qty, sender=Album)

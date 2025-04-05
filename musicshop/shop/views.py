@@ -169,3 +169,13 @@ class ClearNotificationsView(views.View):
     def get(request, *args, **kwargs):
         Notification.objects.make_all_read(request.user.customer)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+class RemoveFromWishListView(views.View):
+
+    @staticmethod
+    def get(request, *args, **kwargs):
+        album = Album.objects.get(id=kwargs['album_id'])
+        customer = Customer.objects.get(user=request.user)
+        customer.wishlist.remove(album)
+        return HttpResponseRedirect(request.META['HTTP_REFERER'])
