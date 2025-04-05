@@ -6,7 +6,7 @@ from .views import (BaseView, ArtistDetailView,
                     CartView, AddToCartView,
                     DeleteFromCartView, ChangeQTYView,
                     AddToWishlist, ClearNotificationsView,
-                    RemoveFromWishListView)
+                    RemoveFromWishListView, CheckoutView)
 
 urlpatterns = [
 # end-point для корзины
@@ -21,6 +21,7 @@ urlpatterns = [
     path('add-to-wishlist/<int:album_id>/',AddToWishlist.as_view(),name='add_to_wishlist'),
     path('remove-from-wishlist/<int:album_id>/',RemoveFromWishListView.as_view(),name='remove_from_wishlist'),
     path('account/',AccountView.as_view(), name='account'),
+    path('checkout/',CheckoutView.as_view(), name='checkout'),
     path('clear-notifications/', ClearNotificationsView.as_view(),name='clear_notifications'),
     path('<str:artist_slug>/', ArtistDetailView.as_view(), name='artist_detail'),
     path('<str:artist_slug>/<str:album_slug>/', AlbumDetailView.as_view(), name='album_detail'),

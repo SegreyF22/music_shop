@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login
 from utils import recalc_cart
 from .mixins import CartMixin, NotificationsMixin
 from .models import Artist, Album, Customer, CartProduct, Notification
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, RegistrationForm, OrderForm
 
 
 class BaseView(CartMixin, NotificationsMixin, views.View):
@@ -22,14 +22,14 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
         return render(request, 'base.html', context)
 
 
-class ArtistDetailView(views.generic.DetailView):
+class ArtistDetailView(NotificationsMixin, views.generic.DetailView):
     model = Artist
     template_name = 'artist/artist_detail.html'
     slug_url_kwarg = 'artist_slug'
     context_object_name = 'artist'
 
 
-class AlbumDetailView(CartMixin, views.generic.DetailView):
+class AlbumDetailView(CartMixin, NotificationsMixin, views.generic.DetailView):
     model = Album
     template_name = 'album/album_detail.html'
     slug_url_kwarg = 'album_slug'
@@ -94,21 +94,22 @@ class RegistrationView(views.View):
         return render(request, 'registration.html', context)
 
 
-class AccountView(CartMixin, views.View):
+class AccountView(CartMixin, NotificationsMixin, views.View):
 
     def get(self, request, *args, **kwargs):
         customer = Customer.objects.get(user=request.user)
         context = {
             'customer': customer,
-            'cart': self.cart
+            'cart': self.cart,
+            'notifications': self.notifications(request.user)
         }
         return render(request, 'account.html', context)
 
 
-class CartView(CartMixin, views.View):
+class CartView(CartMixin, NotificationsMixin, views.View):
 
     def get(self, request, *args, **kwargs):
-        return render(request, 'cart.html', {'cart': self.cart})
+        return render(request, 'cart.html', {'cart': self.cart, 'notifications': self.notifications(request.user)})
 
 
 class AddToCartView(CartMixin, views.View):
@@ -186,3 +187,15 @@ class RemoveFromWishListView(views.View):
         customer = Customer.objects.get(user=request.user)
         customer.wishlist.remove(album)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+class CheckoutView(CartMixin, NotificationsMixin, views.View):
+
+    def get(self, request, *args, **kwargs):
+        form = OrderForm(request.POST or None)
+        context = {
+            'cart': self.cart,
+            'form': form,
+            'notifications': self.notifications(request.user)
+        }
+        return render(request, 'checkout.html', context)
