@@ -77,6 +77,13 @@
   {% block content %}
     <div class="col-md-12">
       <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+          <h4 class="text-center">Хит продаж текущего месяца</h4>
+          <a href="{{ month_bestseller.get_absolute_url }}">{{ month_bestseller.name }}</a>
+        </div>
+      </div>
+      <div class="row">
         {% for album in albums %}
           <div class="card col-md-3 p-0 mb-3 mt-3">
 

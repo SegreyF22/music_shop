@@ -15,11 +15,14 @@ class BaseView(CartMixin, NotificationsMixin, views.View):
 
     def get(self, request, *args, **kwargs):
         album = Album.objects.all().order_by('-id')[:5]
+        month_bestseller, month_bestseller_qty = Album.objects.get_month_bestseller()
         context = {
             'albums': album,
             'cart': self.cart,
             'notifications': self.notifications(request.user)
         }
+        if month_bestseller:
+            context.update({'month_bestseller':month_bestseller, 'month_bestseller_qty':month_bestseller_qty})
         return render(request, 'base.html', context)
 
 
